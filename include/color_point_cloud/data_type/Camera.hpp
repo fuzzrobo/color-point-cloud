@@ -36,14 +36,14 @@ namespace color_point_cloud {
 
         }
 
-        void set_cv_image(const sensor_msgs::msg::Image::ConstSharedPtr &msg, ImageType image_type) {
+        bool set_cv_image(const sensor_msgs::msg::Image::ConstSharedPtr &msg, ImageType image_type) {
             cv_bridge::CvImageConstPtr cv_ptr;
             if (image_type == ImageType::RAW) {
                 try {
                     cv_ptr = cv_bridge::toCvShare(msg, get_image_msg()->encoding);
                 } catch (cv_bridge::Exception &e) {
 //                    RCLCPP_ERROR(this->get_logger(), "cv_bridge exception: %s", e.what());
-                    return;
+                    return false;
                 }
                 cv::undistort(cv_ptr->image, cv_image_, get_camera_matrix_cv(),
                               get_distortion_matrix_cv());
@@ -52,13 +52,14 @@ namespace color_point_cloud {
                     cv_ptr = cv_bridge::toCvShare(msg, get_image_msg()->encoding);
                 } catch (cv_bridge::Exception &e) {
 //                    RCLCPP_ERROR(this->get_logger(), "cv_bridge exception: %s", e.what());
-                    return;
+                    return false;
                 }
                 cv_image_ = cv_ptr->image;
             } else {
 //                RCLCPP_ERROR(this->get_logger(), "Unknown image type");
-                return;
+                return false;
             }
+            return true;
         }
 
         void set_image_msg(const sensor_msgs::msg::Image::ConstSharedPtr &msg) {
